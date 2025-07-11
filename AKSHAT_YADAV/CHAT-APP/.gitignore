@@ -1,0 +1,15 @@
+.env
+firebase_service_account.json
+__pycache__/
+venv/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+*.sqlite3
+*.log
+node_modules/
+frontend/__pycache__/
+backend/__pycache__/
+frontend/venv/
+backend/venv/
