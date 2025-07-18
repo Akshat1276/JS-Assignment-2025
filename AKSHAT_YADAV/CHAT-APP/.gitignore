@@ -1,5 +1,4 @@
 .env
-firebase_service_account.json
 __pycache__/
 venv/
 *.pyc
@@ -9,7 +8,7 @@ venv/
 *.sqlite3
 *.log
 node_modules/
-frontend/__pycache__/
-backend/__pycache__/
-frontend/venv/
-backend/venv/
+FRONTEND/__pycache__/
+BACKEND/__pycache__/
+FRONTEND/venv/
+BACKEND/venv/
