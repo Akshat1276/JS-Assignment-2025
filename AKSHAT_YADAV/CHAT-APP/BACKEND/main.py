@@ -1,15 +1,28 @@
 # backend/main.py
 from fastapi import FastAPI, HTTPException, Body
+from fastapi.middleware.cors import CORSMiddleware
 from db import get_db_connection
 from pydantic import BaseModel
-from firebase_auth import verify_firebase_token
 from models.openrouter import call_openrouter
 import uuid
 import os
 import psycopg2
 from typing import List
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 @app.get("/")
 def read_root():
@@ -17,20 +30,11 @@ def read_root():
 
 
 # Pydantic models
-class AuthVerifyRequest(BaseModel):
-    id_token: str
-
-class AuthVerifyResponse(BaseModel):
-    uid: str
-    email: str = None
-    name: str = None
-
 class SessionRequest(BaseModel):
-    user_id: str = None
+    user_id: str = None  # Optional, but not required anymore
 
 class SessionResponse(BaseModel):
     session_id: str
-    user_id: str = None
 
 class ChatMessage(BaseModel):
     role: str  # "user" or "assistant"
@@ -61,38 +65,18 @@ def db_test():
         return {"db_connection": "failed", "error": str(e)}
 
 
-# /auth/verify endpoint
-@app.post("/auth/verify", response_model=AuthVerifyResponse)
-def auth_verify(payload: AuthVerifyRequest):
-    decoded = verify_firebase_token(payload.id_token)
-    return AuthVerifyResponse(
-        uid=decoded.get("uid"),
-        email=decoded.get("email"),
-        name=decoded.get("name")
-    )
-
 # /chat/session endpoint
 @app.post("/chat/session", response_model=SessionResponse)
 def chat_session(payload: SessionRequest):
     conn = get_db_connection()
     cur = conn.cursor()
-    # If user_id is provided, check if user exists, else create
-    user_id = payload.user_id
-    if user_id:
-        cur.execute("SELECT id FROM users WHERE id = %s", (user_id,))
-        if not cur.fetchone():
-            # Create user if not exists (minimal info)
-            cur.execute("INSERT INTO users (id) VALUES (%s)", (user_id,))
-    # Create new session
+    # Create new session (no user required)
     session_id = str(uuid.uuid4())
-    if user_id:
-        cur.execute("INSERT INTO sessions (session_id, user_id) VALUES (%s, %s)", (session_id, user_id))
-    else:
-        cur.execute("INSERT INTO sessions (session_id) VALUES (%s)", (session_id,))
+    cur.execute("INSERT INTO sessions (session_id) VALUES (%s)", (session_id,))
     conn.commit()
     cur.close()
     conn.close()
-    return SessionResponse(session_id=session_id, user_id=user_id)
+    return SessionResponse(session_id=session_id)
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
@@ -129,3 +113,14 @@ def chat_history(session_id: str):
     cur.close()
     conn.close()
     return ChatHistoryResponse(history=history)
+
+# --- New endpoint to list all sessions (for sidebar)
+@app.get("/chat/sessions")
+def list_sessions():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT session_id FROM sessions ORDER BY session_id DESC")
+    sessions = [row[0] for row in cur.fetchall()]
+    cur.close()
+    conn.close()
+    return {"sessions": sessions}

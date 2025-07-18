@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Chat App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>LLM Chat</h2>
+                <button id="new-chat-btn" class="new-chat-btn">+ New Chat</button>
+            </div>
+            <div class="sessions-list" id="sessions-list">
+                <!-- Sessions will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="chat-header">
+                <select id="model-select" class="model-select">
+                    <option value="mistralai/mistral-7b-instruct">Mistral 7B Instruct</option>
+                    <option value="openchat/openchat-3.5">OpenChat 3.5</option>
+                    <option value="nousresearch/nous-hermes-2-mixtral">NeuralBeagle 7B</option>
+                    <option value="meta-llama/llama-3-8b-instruct">Meta LLaMA 3 8B Instruct</option>
+                    <option value="huggingfaceh4/zephyr-7b-beta">HuggingFace Zephyr 7B Beta</option>
+                </select>
+                <div class="connection-status" id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connected</span>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chat-messages">
+                <div class="welcome-message">
+                    <h3>Welcome to LLM Chat!</h3>
+                    <p>Select a model and start chatting. Your conversations are automatically saved.</p>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea 
+                        id="message-input" 
+                        placeholder="Type your message here..." 
+                        rows="1"
+                        disabled
+                    ></textarea>
+                    <button id="send-btn" class="send-btn" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13"></path>
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <span class="model-info">Using: <span id="current-model">Mistral 7B Instruct</span></span>
+                    <span class="hint">Press Enter to send</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Connecting to backend...</p>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div class="error-toast" id="error-toast">
+        <div class="toast-content">
+            <span class="toast-message"></span>
+            <button class="toast-close">&times;</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
